@@ -11,6 +11,8 @@
 
     <properties>
         <jetty.plugin.version>9.4.0.v20161208</jetty.plugin.version>
+        <jersey.server.version>1.8</jersey.server.version>
+        <jersey.json.version>1.8</jersey.json.version>
         <maven.compiler.version>3.6.1</maven.compiler.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
@@ -20,12 +22,12 @@
         <dependency>
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-server</artifactId>
-            <version>1.8</version>
+            <version>${jersey.server.version}</version>
         </dependency>
         <dependency>
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-json</artifactId>
-            <version>1.8</version>
+            <version>${jersey.json.version}</version>
         </dependency>
     </dependencies>
 
