@@ -73,6 +73,11 @@ public class BookService {
         return books.remove(bookId);
     }
 
+    /**
+     * Save a given object into the repository.
+     *
+     * @param book
+     */
     public void save(Book book) {
         books.put(book.getId(), book);
     }
