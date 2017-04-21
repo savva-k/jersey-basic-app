@@ -81,4 +81,12 @@ public class BookService {
     public void save(Book book) {
         books.put(book.getId(), book);
     }
+
+    /**
+     * Remove all books from the repository.
+     * This method is used only for testing purpose.
+     */
+    public void removeAll() {
+        books = new HashMap<>();
+    }
 }
