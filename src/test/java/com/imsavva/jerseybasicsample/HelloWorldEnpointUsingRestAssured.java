@@ -6,7 +6,7 @@ import com.imsavva.jerseybasicsample.beans.Book;
 import com.imsavva.jerseybasicsample.service.BookService;
 import io.restassured.http.ContentType;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.webapp.WebAppContext;
 import org.junit.*;
 
 import java.lang.reflect.Type;
@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 
 import static io.restassured.RestAssured.*;
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;
 
 /**
@@ -29,13 +31,19 @@ public class HelloWorldEnpointUsingRestAssured {
     private static Server server;
 
     @BeforeClass
-    public static void init() {
-        // TODO initiate Jetty
+    public static void init() throws Exception {
+        server = new Server(8080);
+        server.setStopAtShutdown(true);
+        WebAppContext webAppContext = new WebAppContext("src/main/webapp", "/");
+        webAppContext.setClassLoader(HelloWorldEnpointUsingRestAssured.class.getClassLoader());
+        server.setHandler(webAppContext);
+
+        server.start();
     }
 
     @AfterClass
-    public static void shutdown() {
-        // TODO shutdown Jetty
+    public static void shutdown() throws Exception {
+        server.stop();
     }
 
     @Before
@@ -47,7 +55,6 @@ public class HelloWorldEnpointUsingRestAssured {
 
     @After
     public void removeAllBooks() {
-        System.out.println("removing");
         bookService.removeAll();
     }
 
@@ -69,7 +76,51 @@ public class HelloWorldEnpointUsingRestAssured {
         String response = get("/books").asString();
         Type listType = new TypeToken<ArrayList<Book>>(){}.getType();
         List<Book> books = new Gson().fromJson(response, listType);
-        System.out.println(books.size());
+
         assertTrue("There must be 3 books in a response", books.size() == 3);
+    }
+
+    @Test
+    public void testGetBookById() {
+        String id = String.valueOf(bookService.getAll().get(0).getId());
+        String response = get("/books/" + id).asString();
+        Book book = new Gson().fromJson(response, Book.class);
+
+        assertNotNull("Book shouldn't be null", book);
+    }
+
+    @Test
+    public void testUpdateBook() {
+        String url = "/books/" + String.valueOf(bookService.getAll().get(0).getId());
+        String response = get(url).asString();
+
+        int newYear = 2017;
+        String newAuthor = "Savva Kodeikin";
+        String newTitle = "Everebody knows how to work with JAX-RS but anyway";
+
+        Book book = new Gson().fromJson(response, Book.class);
+        book.setYear(newYear);
+        book.setAuthor(newAuthor);
+        book.setTitle(newTitle);
+
+        given().contentType(ContentType.JSON)
+                .body(book)
+                .when().put(url).then()
+                .statusCode(200);
+
+        response = get(url).asString();
+        book = new Gson().fromJson(response, Book.class);
+
+        assertEquals("Authors should be equal", newAuthor, book.getAuthor());
+        assertEquals("Titles should be equal", newTitle, book.getTitle());
+        assertTrue("Year fields should be equal", newYear == book.getYear());
+    }
+
+    @Test
+    public void testDeleteBook() {
+        String url = "/books/" + String.valueOf(bookService.getAll().get(0).getId());
+        delete(url);
+
+        given().when().get(url).then().statusCode(404);
     }
 }
